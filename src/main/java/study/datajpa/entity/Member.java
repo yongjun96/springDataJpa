@@ -1,17 +1,13 @@
 package study.datajpa.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
 @Data
 @AllArgsConstructor
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)  // 생성자 프로텍티드로 생성 (권장)
+@ToString(of = {"id", "userName", "age"})
 public class Member {
 
     @Id
@@ -21,7 +17,32 @@ public class Member {
 
     private String userName;
 
+    private int age;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "team_id")
+    private Team team;
+
     public Member(String userName) {
         this.userName = userName;
+    }
+
+    public void changeTeam(Team team){
+        this.team = team;
+        team.getMembers().add(this);
+    }
+
+    public Member(String userName, int age, Team team){
+        this.userName = userName;
+        this.age = age;
+        this.team = team;
+        if(team != null){
+            changeTeam(team);
+        }
+    }
+
+    public Member(String userName, int age) {
+        this.userName = userName;
+        this.age = age;
     }
 }
