@@ -1,5 +1,7 @@
 package study.datajpa.repository;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +32,7 @@ class MemberRepositoryTest {
 
     @Autowired MemberRepository memberRepository;
     @Autowired TeamRepository teamRepository;
+    @PersistenceContext EntityManager em;
 
     @Test
     public void testMember(){
@@ -255,9 +258,34 @@ class MemberRepositoryTest {
         memberRepository.save(new Member("user4", 40));
         memberRepository.save(new Member("user5", 50));
 
+        //벌크 연산은 DB에 먼저 값을 업데이트하고 영속성 컨텍스트는 업데이트 되지 않은 상태
         int result = memberRepository.bulkAgePlus(20);
 
+        Member member = memberRepository.findMemberByUserName("user3");
+        System.out.println(member.getAge());
+
         AssertionsForClassTypes.assertThat(result).isEqualTo(4);
+    }
+
+    @Test
+    public void findMemberLazy(){
+        Team teamA = new Team("teamA");
+        Team teamB = new Team("teamB");
+
+        teamRepository.save(teamA);
+        teamRepository.save(teamB);
+
+        memberRepository.save(new Member("member1", 10, teamA));
+        memberRepository.save(new Member("member2", 10, teamB));
+
+        em.flush();
+        em.clear();
+
+        List<Member> members = memberRepository.findMemberEntityGraph();
+        members.forEach(m -> {
+            System.out.println(m.toString());
+            System.out.println(m.getTeam().toString());
+        });
     }
 
 }
