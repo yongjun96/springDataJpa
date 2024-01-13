@@ -1,14 +1,13 @@
 package study.datajpa.repository;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.QueryHint;
 import org.hibernate.annotations.Fetch;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import study.datajpa.dto.MemberDto;
 import study.datajpa.entity.Member;
@@ -16,7 +15,7 @@ import study.datajpa.entity.Member;
 import java.util.List;
 import java.util.Optional;
 
-public interface MemberRepository extends JpaRepository<Member, Long> {
+public interface MemberRepository extends JpaRepository<Member, Long>, MemberRepositoryCustom {
 
     /*
     ex). findByUserNameAndAgeGreaterThan("AAA", 15)
@@ -70,7 +69,14 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     @Query("select m from Member m")
     List<Member> findMemberEntityGraph();
 
+    // 페치 조인처럼 연관관계 team을 한 쿼리로 같이 조회
     @EntityGraph(attributePaths = {"team"})
-    List<Member> findEntityGraphByUserName(@Param("userNAme") String userName);
+    List<Member> findEntityGraphByUserName(@Param("userName") String userName);
+
+    @QueryHints(value = @QueryHint(name = "org.hibernate.readOnly", value = "true"))
+    Member findReadOnlyByUserName(String userName);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    List<Member> findLockByUserName(String userName);
 
 }

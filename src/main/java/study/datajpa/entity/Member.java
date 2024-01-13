@@ -8,7 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)  // 생성자 프로텍티드로 생성 (권장)
 @ToString(of = {"id", "userName", "age"})
-public class Member {
+public class Member extends BaseEntity{
 
     @Id
     @GeneratedValue

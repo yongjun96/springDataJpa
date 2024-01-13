@@ -2,6 +2,7 @@ package study.datajpa.repository;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.QueryHint;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,7 @@ class MemberRepositoryTest {
 
     @Autowired MemberRepository memberRepository;
     @Autowired TeamRepository teamRepository;
+    @Autowired MemberQueryRepository memberQueryRepository;
     @PersistenceContext EntityManager em;
 
     @Test
@@ -286,6 +288,55 @@ class MemberRepositoryTest {
             System.out.println(m.toString());
             System.out.println(m.getTeam().toString());
         });
+    }
+
+    @Test
+    public void queryHint(){
+        Member member = memberRepository.save(new Member("member1", 10));
+        em.flush();
+        em.clear();
+
+        Member findMember = memberRepository.findReadOnlyByUserName("member1");
+        findMember.setUserName("user1");
+        em.flush();
+    }
+
+    @Test
+    public void lock(){
+        Member member = memberRepository.save(new Member("member1", 10));
+        em.flush();
+        em.clear();
+
+        //for update
+        List<Member> findMember = memberRepository.findLockByUserName("member1");
+    }
+
+    @Test
+    public void custom(){
+
+        List<Member> member = memberRepository.findMemberCustom();
+
+        member.forEach(m -> System.out.println("member -> "+m.toString()));
+    }
+
+
+    @Test
+    public void JpaEventBaseEntity() throws InterruptedException {
+        Member member = new Member("user1");
+        memberRepository.save(member);
+
+        Thread.sleep(100);
+        member.setUserName("member1");
+
+        em.flush(); // @PreUpdate
+        em.clear();
+
+        Optional<Member> findByMember = memberRepository.findById(member.getId());
+
+        System.out.println("CreatedDate -> "+ findByMember.get().getCreatedDate());
+        System.out.println("updatedDate -> "+ findByMember.get().getLastModifiedDate());
+        System.out.println("updatedDate -> "+ findByMember.get().getCreateBy());
+        System.out.println("updatedDate -> "+ findByMember.get().getLastModifiedBy());
     }
 
 }
