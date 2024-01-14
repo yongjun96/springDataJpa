@@ -339,4 +339,17 @@ class MemberRepositoryTest {
         System.out.println("updatedDate -> "+ findByMember.get().getLastModifiedBy());
     }
 
+    @Test
+    public void projections(){
+        for(int i=1; i<=20; i++){
+            Team team = teamRepository.save(new Team("team"+i));
+            memberRepository.save(new Member("user"+i, 10, team));
+        }
+
+        List<UserNameOnlyDto> findProjections = memberRepository.findProjectionsByUserName("user1");
+
+        findProjections.forEach(p -> System.out.println("find -> "+p.toString()));
+
+    }
+
 }

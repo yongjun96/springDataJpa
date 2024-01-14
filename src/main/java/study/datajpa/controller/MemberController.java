@@ -41,11 +41,11 @@ public class MemberController {
     }
 
     //테스트를 위해 생성
-    @PostConstruct
+    /*@PostConstruct
     public void init(){
         for(int i=0; i<=100; i++){
             memberRepository.save(new Member("user"+i, i));
         }
-    }
+    }*/
 
 }
