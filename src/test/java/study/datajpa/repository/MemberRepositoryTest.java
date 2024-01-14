@@ -339,17 +339,61 @@ class MemberRepositoryTest {
         System.out.println("updatedDate -> "+ findByMember.get().getLastModifiedBy());
     }
 
+
     @Test
-    public void projections(){
-        for(int i=1; i<=20; i++){
-            Team team = teamRepository.save(new Team("team"+i));
-            memberRepository.save(new Member("user"+i, 10, team));
-        }
+    public void nativeQuery(){
 
-        List<UserNameOnlyDto> findProjections = memberRepository.findProjectionsByUserName("user1");
+        Team team = new Team("team1");
+        teamRepository.save(team);
 
-        findProjections.forEach(p -> System.out.println("find -> "+p.toString()));
+        Member member = new Member("user1", 10, team);
+        memberRepository.save(member);
 
+        Member nativeMember = memberRepository.findByNativeQuery("user1");
+
+        System.out.println("member : "+nativeMember);
+    }
+
+    @Test
+    public void projecttionsTest(){
+        Team team = new Team("teamName1");
+        em.persist(team);
+
+        Member m1 = new Member("m1", 10, team);
+        Member m2 = new Member("m2", 10, team);
+        em.persist(m1);
+        em.persist(m2);
+
+        em.flush();
+        em.clear();
+
+        List<Member> member2 = memberRepository.findEntityGraphByUserName("m1");
+
+    }
+
+    @Test
+    public void projectionNativeQuery(){
+
+        Team team = new Team("teamName1");
+        em.persist(team);
+
+        Member m1 = new Member("m1", 10, team);
+        Member m2 = new Member("m2", 10, team);
+        em.persist(m1);
+        em.persist(m2);
+
+        em.flush();
+        em.clear();
+
+        PageRequest pageRequest = PageRequest.of(0, 10);
+        Page<MemberProjection> findMemberPage = memberRepository.findByNativeProjection(pageRequest);
+
+        List<MemberProjection> projectionsList = findMemberPage.getContent();
+
+        projectionsList.forEach(pl -> {
+            System.out.println("page : "+pl.getUserName());
+            System.out.println("page : "+pl.getId());
+        });
     }
 
 }
